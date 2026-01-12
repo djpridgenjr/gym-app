@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>FB Mass Logbook</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0b0b0c" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="title">
+      <h1>FB Mass Logbook</h1>
+      <p class="sub">Phone-first logbook • A/B/C templates • “Last time”, suggestions, PR flags, backups • Offline</p>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button class="tab active" data-view="log">Log</button>
+      <button class="tab" data-view="history">History</button>
+      <button class="tab" data-view="stats">Stats</button>
+      <button class="tab" data-view="tools">Tools</button>
+      <button class="tab" data-view="settings">Settings</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- LOG -->
+    <section id="view-log" class="view active">
+      <div class="card">
+        <div class="grid">
+          <label>
+            Date
+            <input id="sessionDate" type="date" />
+          </label>
+          <label>
+            Session
+            <select id="sessionType">
+              <option value="FB-A">FB-A</option>
+              <option value="FB-B">FB-B</option>
+              <option value="FB-C">FB-C</option>
+            </select>
+          </label>
+          <label>
+            BW (lb)
+            <input id="bodyweight" inputmode="decimal" type="number" step="0.1" placeholder="147.0" />
+          </label>
+          <label>
+            Cals
+            <input id="calories" inputmode="numeric" type="number" step="1" placeholder="3200" />
+          </label>
+          <label>
+            Sleep
+            <input id="sleep" inputmode="decimal" type="number" step="0.1" placeholder="8.0" />
+          </label>
+        </div>
+
+        <div class="row">
+          <button id="saveSession" class="btn primary">Save Session</button>
+          <button id="clearInputs" class="btn secondary">Clear</button>
+          <span id="saveStatus" class="muted"></span>
+        </div>
+
+        <div class="row micro">
+          <span class="pill">Legs first, 2 leg movements max</span>
+          <span class="pill">Compounds: Top 0–1 RIR, Back-off ~1 RIR</span>
+          <span class="pill">Pull-ups: technical failure (RIR 0)</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row space-between">
+          <h2 class="h2">Workout</h2>
+          <div class="row">
+            <button id="expandAll" class="btn ghost">Expand</button>
+            <button id="collapseAll" class="btn ghost">Collapse</button>
+          </div>
+        </div>
+        <div id="workoutContainer" class="workout"></div>
+      </div>
+
+      <div class="rest-timer" id="restTimer">
+        <div class="rt-top">
+          <span class="rt-label">Rest</span>
+          <span class="rt-time" id="rtTime">00:00</span>
+        </div>
+        <div class="rt-btns">
+          <button class="rt-btn" data-sec="60">60s</button>
+          <button class="rt-btn" data-sec="90">90s</button>
+          <button class="rt-btn" data-sec="120">120s</button>
+          <button class="rt-btn" data-sec="180">180s</button>
+          <button class="rt-btn danger" id="rtStop">Stop</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="view-history" class="view">
+      <div class="card">
+        <div class="row space-between">
+          <h2 class="h2">Exercise History</h2>
+          <div class="row">
+            <select id="historyExercise"></select>
+            <button id="exportCsv" class="btn secondary">CSV</button>
+          </div>
+        </div>
+        <div id="historyTable"></div>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section id="view-stats" class="view">
+      <div class="card">
+        <div class="row space-between">
+          <h2 class="h2">Weekly Bodyweight</h2>
+          <div class="row">
+            <button id="bw7" class="btn ghost active-mini">7d</button>
+            <button id="bw30" class="btn ghost">30d</button>
+          </div>
+        </div>
+        <canvas id="bwChart" height="120"></canvas>
+        <p class="muted" id="bwSummary"></p>
+      </div>
+
+      <div class="card">
+        <h2 class="h2">PR / Progress Snapshot</h2>
+        <div id="snapshot"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="h2">Recent Sessions</h2>
+        <div id="sessionsTable"></div>
+      </div>
+    </section>
+
+    <!-- TOOLS -->
+    <section id="view-tools" class="view">
+      <div class="card">
+        <h2 class="h2">Plate Calculator</h2>
+        <p class="muted">Enter target weight. Assumes 45 lb bar unless changed. Shows plates per side.</p>
+        <div class="row">
+          <label>
+            Target (lb)
+            <input id="pcTarget" inputmode="decimal" type="number" step="0.5" placeholder="225" />
+          </label>
+          <label>
+            Bar (lb)
+            <input id="pcBar" inputmode="decimal" type="number" step="0.5" value="45" />
+          </label>
+          <button id="pcCalc" class="btn secondary">Calculate</button>
+        </div>
+        <div id="pcOut"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="h2">Backup</h2>
+        <p class="muted">Export/import your full logbook (JSON). Useful when switching phones.</p>
+        <div class="row">
+          <button id="backupJson" class="btn secondary">Export JSON Backup</button>
+          <label class="file">
+            Import JSON Backup
+            <input id="importJson" type="file" accept="application/json" />
+          </label>
+          <span id="backupStatus" class="muted"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="view-settings" class="view">
+      <div class="card">
+        <h2 class="h2">Install (iPhone)</h2>
+        <ol>
+          <li>Open your GitHub Pages URL in Safari.</li>
+          <li>Share → Add to Home Screen.</li>
+          <li>Launch from the Home Screen icon for the most “native” experience.</li>
+        </ol>
+        <p class="muted">Data is stored locally on this device. Clearing Safari website data can erase it—use backups.</p>
+      </div>
+      <div class="card">
+        <h2 class="h2">Updates</h2>
+        <p class="muted">Tap to check for a new version. If an update is found, you’ll be prompted to reload.</p>
+        <div class="row">
+          <button id="checkUpdates" class="btn secondary">Check for Updates</button>
+          <span id="updateStatus" class="muted"></span>
+        </div>
+      </div>
+
+
+      <div class="card">
+        <h2 class="h2">Data</h2>
+        <div class="row">
+          <button id="wipeData" class="btn danger">Wipe All Data</button>
+          <span id="wipeStatus" class="muted"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="h2">RIR Reference</h2>
+        <p class="muted"><strong>RIR</strong> = reps in reserve (how many clean reps you had left). Compounds: avoid failed reps (RIR -1). Pull-ups: technical failure (RIR 0).</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span class="muted">FB Mass Logbook • v2 • offline • local storage</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
