@@ -34,76 +34,6 @@ const PROGRAM = {
 };
 
 // -----------------------------
-// PWA Updates (Service Worker)
-// -----------------------------
-let swReg = null;
-let refreshing = false;
-
-function setupServiceWorkerUpdates(){
-  if(!("serviceWorker" in navigator)) return;
-
-  navigator.serviceWorker.register("./sw.js").then((reg) => {
-    swReg = reg;
-
-    // If a new SW is found, it will go to "waiting" after install if a page is still controlled.
-    reg.addEventListener("updatefound", () => {
-      const newWorker = reg.installing;
-      if(!newWorker) return;
-      newWorker.addEventListener("statechange", () => {
-        if(newWorker.state === "installed"){
-          // If there's an existing controller, this is an update.
-          if(navigator.serviceWorker.controller){
-            const el = document.getElementById("updateStatus");
-            if(el) el.textContent = "Update ready. Open Settings → Check for Updates.";
-          }
-        }
-      });
-    });
-  }).catch(console.error);
-
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if(refreshing) return;
-    refreshing = true;
-    window.location.reload();
-  });
-}
-
-async function checkForUpdates(){
-  const el = document.getElementById("updateStatus");
-  if(el) el.textContent = "Checking…";
-
-  try{
-    if(!swReg){
-      // In case registration hasn't completed yet
-      if("serviceWorker" in navigator){
-        swReg = await navigator.serviceWorker.getRegistration("./");
-      }
-    }
-    if(!swReg){
-      if(el) el.textContent = "Service worker not available.";
-      return;
-    }
-
-    await swReg.update();
-
-    if(swReg.waiting){
-      if(el) el.textContent = "Updating…";
-      // Tell waiting SW to activate now
-      swReg.waiting.postMessage({type:"SKIP_WAITING"});
-      return;
-    }
-
-    // If no waiting worker, likely up to date (or update still downloading)
-    if(el) el.textContent = "Up to date.";
-    setTimeout(() => { if(el) el.textContent = ""; }, 1500);
-  } catch(err){
-    console.error(err);
-    if(el) el.textContent = "Update check failed.";
-  }
-}
-
-
-// -----------------------------
 // IndexedDB
 // -----------------------------
 const DB_NAME = "fb_mass_logbook";
@@ -1030,14 +960,6 @@ async function init(){
   });
 
   // Plate calc
-
-  // Updates
-  const updBtn = document.getElementById(\"checkUpdates\");
-  if(updBtn){
-    updBtn.addEventListener(\"click\", checkForUpdates);
-  }
-
-  // Plate calc
   $("pcCalc").addEventListener("click", () => {
     const target = parseFloat($("pcTarget").value);
     const bar = parseFloat($("pcBar").value);
@@ -1065,8 +987,11 @@ async function init(){
   await renderSnapshot();
   await renderBWChart(currentBWWindowDays);
   await renderHistory($("historyExercise").value);
-  // Service worker + update handling
-  setupServiceWorkerUpdates();
+
+  // Service worker
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("./sw.js").catch(console.error);
+  }
 }
 
 init();
