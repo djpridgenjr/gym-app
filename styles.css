@@ -199,17 +199,3 @@ label.file input{display:none}
     font-size: 15px;
   }
 }
-
-/* iOS Safari date input tends to render taller than other inputs */
-input[type="date"]{
-  height: auto;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  line-height: normal;
-}
-@media (max-width: 390px) {
-  input[type="date"]{
-    padding-top: 9px;
-    padding-bottom: 9px;
-  }
-}
