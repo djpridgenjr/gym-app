@@ -1,5 +1,5 @@
 // Offline cache (v2)
-const CACHE_NAME = "fb-mass-logbook-v3";
+const CACHE_NAME = "fb-mass-logbook-v4";
 const ASSETS = ["./","./index.html","./styles.css","./app.js","./manifest.json","./icon-192.png","./icon-512.png"];
 
 self.addEventListener("install", (event) => {
