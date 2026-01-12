@@ -1,5 +1,5 @@
 // Offline cache (v2)
-const CACHE_NAME = "fb-mass-logbook-v4";
+const CACHE_NAME = "fb-mass-logbook-v6";
 const ASSETS = ["./","./index.html","./styles.css","./app.js","./manifest.json","./icon-192.png","./icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -15,4 +15,11 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   event.respondWith(caches.match(event.request).then(resp => resp || fetch(event.request)));
+});
+
+
+self.addEventListener("message", (event) => {
+  if(event.data && event.data.type === "SKIP_WAITING"){
+    self.skipWaiting();
+  }
 });
